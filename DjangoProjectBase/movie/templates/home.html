@@ -12,6 +12,24 @@
         <button type="submit" class="btn btn-primary">Search</button>
     </form>   
     <p>Searching for: {{searchTerm}}</p> 
+
+    {% if recommended_movie %}
+        <h2>Recommended:</h2>
+        <div class="row row-cols-1 row-cols-md-3 g-4"> <!-- define una fila en una cuadrícula con una columna en pantallas extra pequeñas y tres columnas en pantallas grandes-->
+            <div class="card">
+                <img src="{{ recommended_movie.image.url }}" class="card-img-top" alt="...">
+                <div class="card-body">
+                    <h5 class="card-title fw-bold">{{ recommended_movie.title}}</h5>
+                    <p class="card-text">{{ recommended_movie.description}}</p>
+                    <p class="card-text">{{ recommended_movie.genre}}</p>
+                    <p class="card-text">{{ recommended_movie.year}}</p>
+                    {% if recommended_movie.url %}
+                        <a href="{{ recommended_movie.url }}" class="btn btn-primary">Movie Link</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>   
+    {% endif %}
     <div class="row row-cols-1 row-cols-md-3 g-4"> <!-- define una fila en una cuadrícula con una columna en pantallas extra pequeñas y tres columnas en pantallas grandes-->
         {% for movie in movies %}
         <div v-for="movie in movies" class="col">

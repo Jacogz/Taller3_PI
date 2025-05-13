@@ -8,16 +8,45 @@ import matplotlib
 import io
 import urllib, base64
 
+from openai import OpenAI
+import numpy as np
+import os
+from dotenv import load_dotenv
+
 def home(request):
     #return HttpResponse('<h1>Welcome to Home Page</h1>')
     #return render(request, 'home.html')
     #return render(request, 'home.html', {'name':'Paola Vallejo'})
     searchTerm = request.GET.get('searchMovie') # GET se usa para solicitar recursos de un servidor
+    recommended_movie = None
     if searchTerm:
         movies = Movie.objects.filter(title__icontains=searchTerm)
+        
+        load_dotenv('../api_keys.env')
+        client = OpenAI(api_key = os.environ.get('openai_apikey'))
+        
+        def cosine_similarity(a, b):
+            return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
+        
+        response = client.embeddings.create(
+            input=[searchTerm],
+            model="text-embedding-3-small"
+        )
+        prompt_emb = np.array(response.data[0].embedding, dtype=np.float32)
+        
+        max_similarity = -1
+        
+        for movie in Movie.objects.all():
+            movie_emb = np.frombuffer(movie.emb, dtype=np.float32)
+            similarity = cosine_similarity(prompt_emb, movie_emb)
+            
+            if similarity > max_similarity:
+                max_similarity = similarity
+                recommended_movie = movie
+                
     else:
         movies = Movie.objects.all()
-    return render(request, 'home.html', {'searchTerm':searchTerm, 'movies':movies})
+    return render(request, 'home.html', {'searchTerm':searchTerm, 'movies':movies, 'recommended_movie': recommended_movie})
 
 
 def about(request):
